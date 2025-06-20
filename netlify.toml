@@ -2,17 +2,38 @@
 [build]
   command = "# no build command"
   functions = "netlify/functions"
-  publish = "."
+  publish = "public"
 
 [[plugins]]
 package = "@netlify/plugin-functions-install-core"
 
-  ## Uncomment to use this redirect for Single Page Applications like create-react-app.
-  ## Not needed for static site generators.
-  #[[redirects]]
-  #  from = "/*"
-  #  to = "/index.html"
-  #  status = 200
+  ## API endpoint redirects (clean URLs) - use rewrites for proper method handling
+  [[redirects]]
+    from = "/api/v1/health"
+    to = "/.netlify/functions/health"
+    status = 200
+
+  [[redirects]]
+    from = "/api/v1/docs"
+    to = "/.netlify/functions/docs"
+    status = 200
+
+  [[redirects]]
+    from = "/api/v1/tickets"
+    to = "/.netlify/functions/tickets"
+    status = 200
+
+  ## API Documentation redirects
+  [[redirects]]
+    from = "/docs"
+    to = "/api-docs.html"
+    status = 200
+
+  [[redirects]]
+    from = "/api/docs"
+    to = "/api-docs.html"
+    status = 200
+
 
   ## (optional) Settings for Netlify Dev
   ## https://github.com/netlify/cli/blob/main/docs/netlify-dev.md#project-detection

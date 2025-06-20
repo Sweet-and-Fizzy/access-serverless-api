@@ -1,15 +1,32 @@
-# Saved Form Definitions
+# JSM Form Definitions Reference
 
-Form field IDs and names are available via API at these URLS:
+This directory contains saved JSM form definitions for the ACCESS Service Desk request types. These are used as reference documentation for field mappings and ProForma integration.
 
-https://access-ci.atlassian.net/rest/servicedeskapi/servicedesk/2/requesttype/17/field
-https://access-ci.atlassian.net/rest/servicedeskapi/servicedesk/2/requesttype/30/field
-https://access-ci.atlassian.net/rest/servicedeskapi/servicedesk/2/requesttype/31/field
+## Request Types
 
-We will likely want to use these dynamically to keep things fresh, but for now, this directory stores a copy of these as data both for access and for AI-assisted development.
+- **Request Type 17**: General Support Tickets (`support-17.json`)
+- **Request Type 30**: ACCESS Portal Login Issues (`access-login-30.json`) 
+- **Request Type 31**: Resource Provider Login Issues (`provider-login-31.json`)
 
-Support Ticket: 17
-Access Login Help: 30
-Provider Login Help: 31
+## Usage
 
-Example from dev ticket is also here as a reference.
+The field mappings in `field-mapping.ts` are derived from these definitions. The JSON files contain:
+
+- JSM custom field IDs and names
+- ProForma question IDs and types
+- Choice mappings for dropdowns and multi-select fields
+- Field validation requirements
+
+## Live API Endpoints
+
+Current form definitions can be retrieved from:
+
+```
+GET /rest/servicedeskapi/servicedesk/2/requesttype/17/field
+GET /rest/servicedeskapi/servicedesk/2/requesttype/30/field  
+GET /rest/servicedeskapi/servicedesk/2/requesttype/31/field
+```
+
+## Maintenance
+
+These saved definitions should be updated periodically if the JSM form structure changes. The field mappings may need corresponding updates to maintain compatibility.

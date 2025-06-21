@@ -12,6 +12,7 @@ A Netlify Functions-based API for creating support tickets in Atlassian JSM Serv
   - **Type 17**: General support tickets
   - **Type 30**: ACCESS portal login issues
   - **Type 31**: Resource provider login issues
+  - **Type 26**: Security incident reports
 
 ## 🚀 Quick Start
 
@@ -34,8 +35,37 @@ Returns API status, version, and available endpoints for service discovery.
 
 Creates a new support ticket in JSM with ProForma integration and file attachments.
 
+### 🔒 Create Security Incident Report
+**POST** `/api/v1/security-incidents`
 
-#### Request Body
+Creates a new security incident report in the dedicated ACCESS cybersecurity service desk (Service Desk ID: 3).
+
+#### Security Incident Request Body
+
+```json
+{
+  "serviceDeskId": 3,
+  "requestTypeId": 26,
+  "requestFieldValues": {
+    "summary": "Suspicious network activity detected",
+    "priority": "High",
+    "description": "Multiple failed SSH attempts from unknown IP addresses",
+    "name": "Jane Security",
+    "email": "jane.security@example.edu", 
+    "accessId": "ACCESS789012"
+  },
+  "attachments": [
+    {
+      "fileName": "network_logs.txt",
+      "contentType": "text/plain",
+      "fileData": "base64EncodedContent",
+      "size": 2048
+    }
+  ]
+}
+```
+
+#### Support Ticket Request Body
 
 ```json
 {
@@ -95,6 +125,12 @@ Creates a new support ticket in JSM with ProForma integration and file attachmen
 - `userName`, `accessId`, `accessResource`, `description`
 - **ProForma**: `userIdAtResource`
 
+### Request Type 26: Security Incidents
+- `summary`, `description`, `priority`
+- `name`, `email`, `accessId`
+- **File Attachments**: Supports evidence files, logs, screenshots
+- **Service Desk**: Dedicated cybersecurity team routing (Service Desk ID: 3)
+
 ## Environment Variables
 
 Configure these environment variables in Netlify:
@@ -137,10 +173,10 @@ JIRA_CLOUD_ID=your-cloud-id
 ```
 ├── netlify/
 │   └── functions/
-│       ├── api/v1/
-│       │   ├── health/health.ts            # Health check endpoint
-│       │   ├── docs/docs.ts                # OpenAPI documentation  
-│       │   └── tickets/tickets.ts          # Main ticket creation API
+│       ├── health.ts                       # Health check endpoint
+│       ├── docs.ts                         # OpenAPI documentation  
+│       ├── tickets.ts                      # Main ticket creation API
+│       ├── security-incidents.ts           # Security incident reporting API
 │       └── shared/
 │           └── field-mapping.ts            # Field mappings & choice IDs
 ├── public/
@@ -160,6 +196,7 @@ This API integrates with Atlassian ProForma forms to collect enhanced data beyon
 - **Template 1**: General support tickets (RT 17)
 - **Template 4**: ACCESS login issues (RT 30)  
 - **Template 5**: Resource login issues (RT 31)
+- **Security Incidents (RT 26)**: Uses standard JSM fields only (no ProForma)
 
 The field mappings handle conversion between user-friendly field names and the specific choice IDs required by JSM.
 

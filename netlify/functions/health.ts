@@ -36,6 +36,11 @@ export const handler: Handler = async (event, context) => {
           methods: ['POST'],
           description: 'Create support tickets with ProForma integration'
         },
+        'security-incidents': {
+          path: '/api/v1/security-incidents',
+          methods: ['POST'],
+          description: 'Create security incident reports for cybersecurity team'
+        },
         health: {
           path: '/api/v1/health',
           methods: ['GET'],

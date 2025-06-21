@@ -23,6 +23,15 @@ export const requestTypeFields: Record<number, Record<string, string>> = {
     accessResourceUserId: 'customfield_10112',
     description: 'description'
   },
+  // Request Type: Security Incident
+  26: {
+    summary: 'summary',
+    priority: 'priority',
+    description: 'description',
+    name: 'customfield_10108',
+    accessId: 'customfield_10103'
+    // email is handled via raiseOnBehalfOf in the API
+  },
 }
 
 // Priority mapping - maps user-friendly values to JSM priority IDs/names

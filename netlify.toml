@@ -23,6 +23,11 @@ package = "@netlify/plugin-functions-install-core"
     to = "/.netlify/functions/tickets"
     status = 200
 
+  [[redirects]]
+    from = "/api/v1/security-incidents"
+    to = "/.netlify/functions/security-incidents"
+    status = 200
+
   ## API Documentation redirects
   [[redirects]]
     from = "/docs"

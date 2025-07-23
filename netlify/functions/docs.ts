@@ -79,7 +79,7 @@ export const handler: Handler = async (event, context) => {
                     {
                       title: 'General Support Ticket (RT 17)',
                       type: 'object',
-                      required: ['ticketType', 'summary', 'description', 'email', 'userName', 'accessId', 'priority'],
+                      required: ['ticketType', 'summary', 'description', 'email', 'name', 'accessId', 'priority'],
                       properties: {
                         ticketType: {
                           type: 'string',
@@ -103,7 +103,7 @@ export const handler: Handler = async (event, context) => {
                           description: 'Reporter email address',
                           example: 'test-user@example.edu'
                         },
-                        userName: {
+                        name: {
                           type: 'string',
                           description: 'User full name',
                           example: 'Test User - API Documentation'
@@ -122,7 +122,7 @@ export const handler: Handler = async (event, context) => {
                           type: 'string',
                           enum: [
                             'User Account Question',
-                            'Allocation Question', 
+                            'Allocation Question',
                             'User Support Question',
                             'CSSN/CCEP Question',
                             'Training Question',
@@ -183,14 +183,14 @@ export const handler: Handler = async (event, context) => {
                     {
                       title: 'ACCESS Portal Login Issue (RT 30)',
                       type: 'object',
-                      required: ['ticketType', 'userName', 'accessId', 'description'],
+                      required: ['ticketType', 'name', 'accessId', 'description'],
                       properties: {
                         ticketType: {
                           type: 'string',
                           enum: ['access_login', 'loginAccess'],
                           description: 'ACCESS portal login problems'
                         },
-                        userName: {
+                        name: {
                           type: 'string',
                           description: 'User full name',
                           example: 'Test User Jane - API Documentation'
@@ -236,14 +236,14 @@ export const handler: Handler = async (event, context) => {
                     {
                       title: 'Resource Provider Login Issue (RT 31)',
                       type: 'object',
-                      required: ['ticketType', 'userName', 'accessId', 'accessResource', 'description'],
+                      required: ['ticketType', 'name', 'accessId', 'accessResource', 'description'],
                       properties: {
                         ticketType: {
                           type: 'string',
                           enum: ['provider_login', 'loginProvider'],
                           description: 'Resource provider login problems'
                         },
-                        userName: {
+                        name: {
                           type: 'string',
                           description: 'User full name',
                           example: 'Test User Bob - API Documentation'
@@ -309,7 +309,7 @@ export const handler: Handler = async (event, context) => {
                           format: 'email',
                           description: 'Contact email (optional for anonymous feedback)'
                         },
-                        userName: {
+                        name: {
                           type: 'string',
                           description: 'User name (optional for anonymous feedback)'
                         },
@@ -445,22 +445,22 @@ export const handler: Handler = async (event, context) => {
                         type: 'object',
                         required: ['fileName', 'contentType', 'fileData', 'size'],
                         properties: {
-                          fileName: { 
+                          fileName: {
                             type: 'string',
                             description: 'Name of the file',
                             example: 'test_network_logs.txt'
                           },
-                          contentType: { 
+                          contentType: {
                             type: 'string',
                             description: 'MIME type of the file',
                             example: 'text/plain'
                           },
-                          fileData: { 
-                            type: 'string', 
+                          fileData: {
+                            type: 'string',
                             format: 'base64',
                             description: 'Base64 encoded file content'
                           },
-                          size: { 
+                          size: {
                             type: 'integer',
                             description: 'File size in bytes',
                             example: 2048

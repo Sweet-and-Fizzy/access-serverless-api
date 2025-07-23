@@ -51,7 +51,7 @@ Creates a new security incident report in the dedicated ACCESS cybersecurity ser
     "priority": "High",
     "description": "Multiple failed SSH attempts from unknown IP addresses",
     "name": "Jane Security",
-    "email": "jane.security@example.edu", 
+    "email": "jane.security@example.edu",
     "accessId": "ACCESS789012"
   },
   "attachments": [
@@ -75,11 +75,11 @@ Creates a new security incident report in the dedicated ACCESS cybersecurity ser
     "email": "user@example.edu",
     "summary": "Unable to access Expanse cluster",
     "description": "Getting authentication errors when trying to SSH",
-    "userName": "John Doe",
+    "name": "John Doe",
     "accessId": "ACCESS123456",
     "priority": "medium",
     "issueType": "user support question",
-    
+
     // ProForma fields (optional)
     "hasResourceProblem": "Yes",
     "userIdAtResource": "johndoe_expanse",
@@ -114,15 +114,15 @@ Creates a new security incident report in the dedicated ACCESS cybersecurity ser
 
 ### Request Type 17: General Support
 - `summary`, `description`, `priority`
-- `userName`, `accessId`, `issueType`
+- `name`, `accessId`, `issueType`
 - **ProForma**: `hasResourceProblem`, `userIdAtResource`, `resourceName`, `keywords`, `suggestedKeyword`
 
 ### Request Type 30: ACCESS Portal Login
-- `userName`, `accessId`, `description`
+- `name`, `accessId`, `description`
 - **ProForma**: `identityProvider`, `browser`
 
 ### Request Type 31: Resource Provider Login
-- `userName`, `accessId`, `accessResource`, `description`
+- `name`, `accessId`, `accessResource`, `description`
 - **ProForma**: `userIdAtResource`
 
 ### Request Type 26: Security Incidents
@@ -174,7 +174,7 @@ JIRA_CLOUD_ID=your-cloud-id
 ├── netlify/
 │   └── functions/
 │       ├── health.ts                       # Health check endpoint
-│       ├── docs.ts                         # OpenAPI documentation  
+│       ├── docs.ts                         # OpenAPI documentation
 │       ├── tickets.ts                      # Main ticket creation API
 │       ├── security-incidents.ts           # Security incident reporting API
 │       └── shared/
@@ -194,7 +194,7 @@ JIRA_CLOUD_ID=your-cloud-id
 This API integrates with Atlassian ProForma forms to collect enhanced data beyond standard JSM fields. Each request type uses a specific ProForma template:
 
 - **Template 1**: General support tickets (RT 17)
-- **Template 4**: ACCESS login issues (RT 30)  
+- **Template 4**: ACCESS login issues (RT 30)
 - **Template 5**: Resource login issues (RT 31)
 - **Security Incidents (RT 26)**: Uses standard JSM fields only (no ProForma)
 

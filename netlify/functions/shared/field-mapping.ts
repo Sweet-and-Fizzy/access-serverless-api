@@ -5,19 +5,19 @@ export const requestTypeFields: Record<number, Record<string, string>> = {
     summary: 'summary',
     description: 'description',
     accessId: 'customfield_10103',
-    userName: 'customfield_10108',
+    name: 'customfield_10108',
     issueType: 'customfield_10111',
     priority: 'priority'
   },
   // Request Type: Login to Access (loginAccess)
   30: {
-    userName: 'customfield_10108',
+    name: 'customfield_10108',
     accessId: 'customfield_10103',
     description: 'description'
   },
   // Request Type: Login to provider (loginProvider)
   31: {
-    userName: 'customfield_10108',
+    name: 'customfield_10108',
     accessId: 'customfield_10103',
     accessResource: 'customfield_10110',
     accessResourceUserId: 'customfield_10112',
@@ -496,12 +496,12 @@ function mapAccessResourceValue(accessResource: any): { id: string } {
 
   const resourceStr = String(accessResource).toLowerCase();
   const resourceId = accessResourceChoiceMapping[resourceStr];
-  
+
   if (!resourceId) {
     console.warn(`Unknown ACCESS resource: ${accessResource}, defaulting to Expanse`);
     return { id: '10202' }; // Default to "Expanse" if not found
   }
-  
+
   return { id: resourceId };
 }
 
@@ -544,19 +544,19 @@ function mapKeywordsValue(keywords: any): { id: string }[] {
  */
 function mapSuggestedKeywordValue(suggestedKeyword: any): { id: string } {
   const keywordStr = String(suggestedKeyword).toLowerCase().trim();
-  
+
   // Handle the explicit "I don't see a relevant keyword" case
   if (keywordStr === "i don't see a relevant keyword" || keywordStr === "i don't see a relevant keyword") {
     return { id: '0' };
   }
-  
+
   const keywordId = keywordChoiceMapping[keywordStr];
-  
+
   if (!keywordId) {
     console.warn(`Unknown suggested keyword: ${suggestedKeyword}, defaulting to "I don't see a relevant keyword"`);
     return { id: '0' }; // Default to "I don't see a relevant keyword" if not found
   }
-  
+
   return { id: keywordId };
 }
 
@@ -568,12 +568,12 @@ function mapSuggestedKeywordValue(suggestedKeyword: any): { id: string } {
  */
 function mapProFormaChoice(questionId: string, choiceValue: string): string | null {
   const value = choiceValue.toLowerCase().trim();
-  
+
   // Question 16 & 21: Identity Provider (ProForma choice IDs)
   if (questionId === '16' || questionId === '21') {
     const identityProviderMap: Record<string, string> = {
       'access': '3',
-      'github': '6', 
+      'github': '6',
       'google': '4',
       'institution': '1',
       'microsoft': '5',
@@ -582,7 +582,7 @@ function mapProFormaChoice(questionId: string, choiceValue: string): string | nu
     };
     return identityProviderMap[value] || null;
   }
-  
+
   // Question 17 & 22: Browser (ProForma choice IDs)
   if (questionId === '17' || questionId === '22') {
     const browserMap: Record<string, string> = {
@@ -594,12 +594,12 @@ function mapProFormaChoice(questionId: string, choiceValue: string): string | nu
     };
     return browserMap[value] || null;
   }
-  
+
   // Question 8: Resource Name (handle multiple resources)
   if (questionId === '8') {
     const resourceMap: Record<string, string> = {
       'aces': '10197',
-      'anvil': '10198', 
+      'anvil': '10198',
       'bridges-2': '10199',
       'darwin': '10200',
       'delta': '10201',
@@ -618,28 +618,28 @@ function mapProFormaChoice(questionId: string, choiceValue: string): string | nu
       'ranch': '10209',
       'stampede3': '10784'
     };
-    
+
     const mappedId = resourceMap[value?.toLowerCase()] || null;
     console.log(`🔧 Resource mapping: "${value?.toLowerCase()}" -> "${mappedId}"`);
     return mappedId;
   }
-  
+
   // Question 9: Keywords (use keyword choice mapping)
   if (questionId === '9') {
     return keywordChoiceMapping[value] || null;
   }
-  
+
   // Question 10: I don't see a relevant keyword (checkbox)
   if (questionId === '10') {
     // This is a checkbox - if user provided suggested keyword, check the box
     return '1'; // Choice ID for "I don't see a relevant keyword"
   }
-  
+
   // Question 13: Suggested Keyword (use keyword choice mapping)
   if (questionId === '13') {
     return keywordChoiceMapping[value] || null;
   }
-  
+
   // Question 1: Has Resource Problem (Yes/No)
   if (questionId === '1') {
     const yesNoMap: Record<string, string> = {
@@ -650,7 +650,7 @@ function mapProFormaChoice(questionId: string, choiceValue: string): string | nu
     };
     return yesNoMap[value] || null;
   }
-  
+
   // Default: return the value as-is
   return choiceValue;
 }
@@ -735,14 +735,14 @@ export function mapProformaValues(requestTypeId: number, userInputValues: Record
       } else if (fieldType === 'choices') {
         // Map choice values to ProForma choice IDs
         let mappedChoices: string[] = [];
-        
+
         if (Array.isArray(value)) {
           mappedChoices = value.map(choice => mapProFormaChoice(questionId, String(choice))).filter(Boolean);
         } else {
           const choices = String(value).split(',').map(choice => choice.trim());
           mappedChoices = choices.map(choice => mapProFormaChoice(questionId, choice)).filter(Boolean);
         }
-        
+
         if (mappedChoices.length > 0) {
           formattedAnswers[questionId] = { choices: mappedChoices };
         }

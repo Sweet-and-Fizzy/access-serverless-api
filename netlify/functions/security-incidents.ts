@@ -61,18 +61,37 @@ const uploadTemporaryAttachment = async (serviceDeskId: number, attachment: {
 }) => {
   try {
     const { fileName, contentType, fileData, size } = attachment;
+    console.log('[UPLOAD] Starting attachment upload:', {
+      serviceDeskId,
+      fileName,
+      contentType,
+      providedSize: size,
+      fileDataLength: fileData?.length || 0,
+      fileDataSample: fileData?.substring(0, 50) + '...'
+    });
+    
     const form = new FormData();
     const fileBuffer = Buffer.from(fileData, 'base64');
+    console.log('[UPLOAD] Buffer created:', {
+      bufferSize: fileBuffer.length,
+      expectedSize: size,
+      sizeMismatch: fileBuffer.length !== size
+    });
     
     form.append('file', fileBuffer, {
       filename: fileName,
       contentType: contentType,
       knownLength: size
     });
+    console.log('[UPLOAD] FormData created with headers:', form.getHeaders());
 
     const auth = Buffer.from(`${process.env.JIRA_API_EMAIL}:${process.env.JIRA_API_KEY}`).toString('base64');
+    console.log('[UPLOAD] Auth configured for:', process.env.JIRA_API_EMAIL);
 
-    const response = await fetch(`${process.env.JSM_BASE_URL}/rest/servicedeskapi/servicedesk/${serviceDeskId}/attachTemporaryFile`, {
+    const uploadUrl = `${process.env.JSM_BASE_URL}/rest/servicedeskapi/servicedesk/${serviceDeskId}/attachTemporaryFile`;
+    console.log('[UPLOAD] Uploading to URL:', uploadUrl);
+
+    const response = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${auth}`,
@@ -82,14 +101,28 @@ const uploadTemporaryAttachment = async (serviceDeskId: number, attachment: {
       body: form
     });
 
+    console.log('[UPLOAD] Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('[UPLOAD] Upload failed with response body:', errorText);
       throw new Error(`JSM attachment upload failed: ${response.status} ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('[UPLOAD] Upload successful, result:', result);
+    return result;
   } catch (error) {
-    console.error('Error uploading temporary attachment:', error);
+    console.error('[UPLOAD] Error uploading temporary attachment:', {
+      error: error.message,
+      stack: error.stack,
+      fileName: attachment?.fileName
+    });
     throw error;
   }
 };
@@ -110,25 +143,77 @@ const createSecurityIncident = async (requestData: ApiRequest) => {
     // Handle file attachments
     let temporaryAttachmentIds: string[] = [];
     if (attachments && attachments.length > 0) {
+      console.log('[SECURITY] Processing attachments:', {
+        count: attachments.length,
+        attachments: attachments.map(a => ({
+          fileName: a.fileName,
+          contentType: a.contentType,
+          size: a.size,
+          hasFileData: !!a.fileData
+        }))
+      });
+      
       for (const attachment of attachments) {
+        // Validate attachment fields before processing
+        if (!attachment.fileName || typeof attachment.fileName !== 'string') {
+          console.error('[SECURITY] Invalid attachment: missing or invalid fileName', attachment);
+          continue;
+        }
+        if (!attachment.contentType || typeof attachment.contentType !== 'string') {
+          console.error('[SECURITY] Invalid attachment: missing or invalid contentType', attachment);
+          continue;
+        }
+        if (!attachment.fileData || typeof attachment.fileData !== 'string') {
+          console.error('[SECURITY] Invalid attachment: missing or invalid fileData', attachment);
+          continue;
+        }
+        if (typeof attachment.size !== 'number' || attachment.size <= 0) {
+          console.error('[SECURITY] Invalid attachment: missing or invalid size', attachment);
+          continue;
+        }
+        
         try {
+          console.log(`[SECURITY] Uploading attachment: ${attachment.fileName}`);
           const uploadResult = await uploadTemporaryAttachment(serviceDeskId, attachment);
-          temporaryAttachmentIds.push(uploadResult.temporaryAttachmentId);
+          
+          // Extract the actual attachment ID from the JSM response structure
+          const attachmentId = uploadResult.temporaryAttachments?.[0]?.temporaryAttachmentId;
+          if (attachmentId) {
+            temporaryAttachmentIds.push(attachmentId);
+            console.log(`[SECURITY] Successfully uploaded ${attachment.fileName}, ID: ${attachmentId}`);
+          } else {
+            console.error(`[SECURITY] Upload succeeded but no attachment ID found in response:`, uploadResult);
+          }
         } catch (error) {
-          console.error(`Failed to upload attachment ${attachment.fileName}:`, error);
+          console.error(`[SECURITY] Failed to upload attachment ${attachment.fileName}:`, error);
         }
       }
+      
+      console.log('[SECURITY] Attachment processing complete:', {
+        requestedCount: attachments.length,
+        successfulCount: temporaryAttachmentIds.length,
+        temporaryAttachmentIds
+      });
     }
 
     // Build JSM request for security incident
     const jsmRequest: JsmRequest = {
       serviceDeskId,
       requestTypeId,
-      requestFieldValues: mappedFields,
-      raiseOnBehalfOf: requestFieldValues.email, // Extract email from the original request
-      ...(temporaryAttachmentIds.length > 0 && { temporaryAttachmentIds })
+      requestFieldValues: {
+        ...mappedFields,
+        // Add attachments field if we have any temporary IDs
+        ...(temporaryAttachmentIds.length > 0 && {
+          attachment: temporaryAttachmentIds
+        })
+      },
+      raiseOnBehalfOf: requestFieldValues.email // Extract email from the original request
       // No form/ProForma for security incidents
     };
+
+    console.log('[SECURITY] Final JSM request payload:', JSON.stringify(jsmRequest, null, 2));
+    console.log('[SECURITY] Mapped fields:', JSON.stringify(mappedFields, null, 2));
+    console.log('[SECURITY] Original requestFieldValues:', JSON.stringify(requestFieldValues, null, 2));
 
     // Submit to JSM
     const auth = Buffer.from(`${process.env.JIRA_API_EMAIL}:${process.env.JIRA_API_KEY}`).toString('base64');
@@ -196,7 +281,14 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
+    console.log('[HANDLER] Received security incident request with body length:', event.body?.length || 0);
     const body: ApiRequest = JSON.parse(event.body || '{}')
+    console.log('[HANDLER] Parsed security incident request:', {
+      serviceDeskId: body.serviceDeskId,
+      requestTypeId: body.requestTypeId,
+      hasAttachments: !!(body.attachments && body.attachments.length > 0),
+      attachmentCount: body.attachments?.length || 0
+    });
     
     // Validate required fields
     const requiredFields = ['serviceDeskId', 'requestTypeId', 'requestFieldValues']

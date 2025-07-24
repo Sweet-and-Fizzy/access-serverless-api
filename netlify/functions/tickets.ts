@@ -124,15 +124,6 @@ const createTicket = async (requestData: ApiRequest) => {
     // Handle file attachments
     let temporaryAttachmentIds: string[] = [];
     if (attachments && attachments.length > 0) {
-      console.log('[TICKET] Processing attachments:', {
-        count: attachments.length,
-        attachments: attachments.map(a => ({
-          fileName: a.fileName,
-          contentType: a.contentType,
-          size: a.size,
-          hasFileData: !!a.fileData
-        }))
-      });
       
       for (const attachment of attachments) {
         // Validate attachment fields before processing
@@ -154,27 +145,18 @@ const createTicket = async (requestData: ApiRequest) => {
         }
         
         try {
-          console.log(`[TICKET] Uploading attachment: ${attachment.fileName}`);
           const uploadResult = await uploadTemporaryAttachment(serviceDeskId, attachment);
           
           // Extract the actual attachment ID from the JSM response structure
           const attachmentId = uploadResult.temporaryAttachments?.[0]?.temporaryAttachmentId;
           if (attachmentId) {
             temporaryAttachmentIds.push(attachmentId);
-            console.log(`[TICKET] Successfully uploaded ${attachment.fileName}, ID: ${attachmentId}`);
-          } else {
-            console.error(`[TICKET] Upload succeeded but no attachment ID found in response:`, uploadResult);
           }
         } catch (error) {
-          console.error(`[TICKET] Failed to upload attachment ${attachment.fileName}:`, error);
+          console.error(`Failed to upload attachment ${attachment.fileName}:`, error);
         }
       }
       
-      console.log('[TICKET] Attachment processing complete:', {
-        requestedCount: attachments.length,
-        successfulCount: temporaryAttachmentIds.length,
-        temporaryAttachmentIds
-      });
     }
 
     // Build JSM request
@@ -263,14 +245,7 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
-    console.log('[HANDLER] Received request with body length:', event.body?.length || 0);
     const body: ApiRequest = JSON.parse(event.body || '{}')
-    console.log('[HANDLER] Parsed request:', {
-      serviceDeskId: body.serviceDeskId,
-      requestTypeId: body.requestTypeId,
-      hasAttachments: !!(body.attachments && body.attachments.length > 0),
-      attachmentCount: body.attachments?.length || 0
-    });
     
     // Validate required fields for the original format
     const requiredFields = ['serviceDeskId', 'requestTypeId', 'requestFieldValues']
